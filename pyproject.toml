@@ -1,0 +1,39 @@
+[project]
+name = "auth-as-a-service"
+version = "0.1.0"
+description = "Production-grade Authentication as a Service platform"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy[asyncio]",
+    "alembic",
+    "asyncpg",
+    "pydantic",
+    "pydantic-settings",
+    "argon2-cffi",
+    "python-jose[cryptography]",
+    "authlib",
+    "webauthn",
+    "pyotp",
+    "redis",
+    "celery",
+    "email-validator",
+    "httpx",
+    "passlib>=1.7.4",
+    "python-multipart>=0.0.22",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "black",
+    "isort",
+    "mypy"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth as a Service - Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="background-gradient"></div>
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    
+    <header class="glass-header">
+        <div class="logo">🔐 AaaS Platform</div>
+        <div id="status-bar" class="status-bar">
+            🟢 Authenticated <button onclick="logout()" class="btn-small">Logout</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Not Authenticated Section -->
+        <section id="auth-section" class="glass-card active-section">
+            <h2>Authentication Portal</h2>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('register')">Register</button>
+            </div>
+            
+            <div id="login-form" class="auth-form active-form">
+                <input type="email" id="login-email" placeholder="Email Address">
+                <input type="password" id="login-password" placeholder="Password">
+                <button onclick="loginWithPassword()" class="btn-primary">Sign In</button>
+                
+                <div class="divider"><span>OR</span></div>
+                
+                <div class="oauth-grid">
+                    <a href="/api/v1/auth/login/google" class="btn-oauth google">Google</a>
+                    <a href="/api/v1/auth/login/github" class="btn-oauth github">GitHub</a>
+                </div>
+                
+                <button onclick="webauthnLogin()" class="btn-secondary">🔑 Sign in with Passkey</button>
+                
+                <div class="magic-link-group">
+                    <input type="email" id="magic-email" placeholder="Email for Magic Link">
+                    <button onclick="sendMagicLink()" class="btn-ghost">Send Magic Link</button>
+                </div>
+            </div>
+
+            <div id="register-form" class="auth-form">
+                <input type="email" id="reg-email" placeholder="Email Address">
+                <input type="password" id="reg-password" placeholder="Secure Password">
+                <button onclick="registerUser()" class="btn-primary">Create Account</button>
+            </div>
+            
+            <div id="auth-alert" class="alert hidden"></div>
+        </section>
+
+        <!-- Authenticated Dashboard -->
+        <section id="dashboard-section" class="glass-card hidden">
+            <h2>Welcome Back!</h2>
+            <div class="profile-card">
+                <div class="avatar">👤</div>
+                <div class="user-info">
+                    <h3 id="user-email">loading...</h3>
+                    <p id="user-id" class="text-sm text-dim">ID: ...</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Passkeys -->
+                <div class="dash-card">
+                    <h3>Passkeys (WebAuthn)</h3>
+                    <p class="text-sm">Register a hardware key or biometrics.</p>
+                    <button onclick="registerPasskey()" class="btn-primary">Register New Passkey</button>
+                </div>
+
+                <!-- API Keys -->
+                <div class="dash-card">
+                    <h3>API Keys</h3>
+                    <p class="text-sm">Manage developer access.</p>
+                    <input type="text" id="api-key-name" placeholder="Key Name (e.g. Production)">
+                    <button onclick="createApiKey()" class="btn-secondary">Generate Key</button>
+                    <div id="api-keys-list" class="list-container"></div>
+                </div>
+
+                <!-- OTP -->
+                <div class="dash-card">
+                    <h3>2FA / OTP</h3>
+                    <p class="text-sm">Enable Authenticator App Code.</p>
+                    <button onclick="setupOTP()" class="btn-secondary">Setup TOTP</button>
+                    <div id="otp-verify-area" class="hidden">
+                        <p class="text-sm text-dim break-all">URI: <span id="otp-uri"></span></p>
+                        <input type="text" id="otp-code" placeholder="Enter 6-digit code">
+                        <button onclick="verifyOTP()" class="btn-primary">Verify & Save</button>
+                    </div>
+                </div>
+
+                <!-- Sessions -->
+                <div class="dash-card">
+                    <h3>Active Sessions</h3>
+                    <p class="text-sm">Revoke active tokens.</p>
+                    <button onclick="fetchSessions()" class="btn-ghost">Refresh Sessions</button>
+                    <div id="sessions-list" class="list-container"></div>
+                </div>
+            </div>
+            <div id="dash-alert" class="alert hidden"></div>
+        </section>
+        
+        <!-- API Modal for newly generated key -->
+        <div id="api-modal" class="modal hidden">
+            <div class="modal-content glass-card">
+                <h3>Secret Generated</h3>
+                <p class="text-error">Copy this secret now! It will not be shown again.</p>
+                <div class="code-block" id="modal-api-key">sk_live_...</div>
+                <button onclick="closeModal()" class="btn-primary">Done</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
