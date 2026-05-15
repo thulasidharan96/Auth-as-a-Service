@@ -7,6 +7,7 @@ from app.models.credential import Credential
 from app.repositories.user import user_repo
 from app.repositories.credential import credential_repo
 from app.utils.webauthn import get_registration_options, verify_registration, get_authentication_options, verify_authentication
+from app.core.logging import logger
 from typing import Any
 
 class WebAuthnService:
@@ -32,7 +33,8 @@ class WebAuthnService:
             )
             return {"status": "success"}
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            logger.error(f"WebAuthn registration failed for user {user.id}", exc_info=True)
+            raise HTTPException(status_code=400, detail="Registration failed")
 
     async def authentication_options(self, email: str) -> dict:
         user = await user_repo.get_by_email(self.db, email)
@@ -45,14 +47,13 @@ class WebAuthnService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
             
-        credentials = await credential_repo.get_by_user_id(self.db, user.id)
-        webauthn_creds = [c for c in credentials if c.auth_method == "webauthn"]
+        webauthn_creds = await credential_repo.get_all_by_user_id_and_method(self.db, user.id, "webauthn")
         
-        if not webauthn_creds:
+        if not credentials:
             raise HTTPException(status_code=400, detail="No passkeys found for user")
             
         # Normally match by credential_id, simplify for now
-        cred = webauthn_creds[0]
+        cred = credentials[0]
         
         try:
             new_sign_count = verify_authentication(
@@ -66,4 +67,5 @@ class WebAuthnService:
             await self.db.commit()
             return user
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            logger.error(f"WebAuthn authentication failed for user {email}", exc_info=True)
+            raise HTTPException(status_code=400, detail="Authentication failed")

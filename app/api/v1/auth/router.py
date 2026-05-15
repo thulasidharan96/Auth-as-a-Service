@@ -129,6 +129,10 @@ async def webauthn_login_finish(
     
     return await auth_service.create_session_tokens(user, device_info=user_agent, ip_address=client_ip)
 
+from app.utils.oauth import oauth
+from app.services.oauth_service import OAuthService
+from fastapi.responses import RedirectResponse
+from app.core.config import settings
 
 @router.get("/login/{provider}")
 async def login_via_provider(provider: str, request: Request):
@@ -136,7 +140,8 @@ async def login_via_provider(provider: str, request: Request):
     if not client:
         raise HTTPException(status_code=400, detail=f"Provider {provider} not supported/configured")
         
-    redirect_uri = request.url_for('auth_via_provider', provider=provider)
+    url_path = request.app.url_path_for('auth_via_provider', provider=provider)
+    redirect_uri = f"{settings.ORIGIN.rstrip('/')}{url_path}"
     return await client.authorize_redirect(request, redirect_uri)
 
 @router.get("/callback/{provider}")
