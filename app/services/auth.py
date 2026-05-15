@@ -81,8 +81,7 @@ class AuthService:
         if not user or not user.is_active:
             raise HTTPException(status_code=401, detail="Invalid credentials")
             
-        credentials = await credential_repo.get_by_user_id(self.db, user.id)
-        pwd_credential = next((c for c in credentials if c.auth_method == "password"), None)
+        pwd_credential = await credential_repo.get_by_user_and_method(self.db, user.id, "password")
         
         if not pwd_credential or not pwd_credential.password_hash:
             raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -135,8 +134,7 @@ class AuthService:
         return secret, uri
 
     async def verify_otp(self, user: User, code: str) -> bool:
-        credentials = await credential_repo.get_by_user_id(self.db, user.id)
-        otp_cred = next((c for c in credentials if c.auth_method == "otp"), None)
+        otp_cred = await credential_repo.get_by_user_and_method(self.db, user.id, "otp")
         
         if not otp_cred or not otp_cred.totp_secret:
             raise HTTPException(status_code=400, detail="OTP not set up")
