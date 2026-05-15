@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.schemas.user import UserCreate, UserRead, Token
+from app.schemas.otp import OTPSetupResponse, OTPVerify
+from app.schemas.webauthn import WebauthnRegistrationStart, WebauthnRegistrationFinish, WebauthnLoginStart, WebauthnLoginFinish
 from app.services.auth import AuthService
+from app.services.webauthn_service import WebAuthnService
+from app.services.oauth_service import OAuthService
 from app.dependencies.auth import get_current_user
 from app.models.user import User
+from app.utils.oauth import oauth
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -62,7 +68,6 @@ async def login_with_magic_link(
     
     return await auth_service.create_session_tokens(user, device_info=user_agent, ip_address=client_ip)
 
-from app.schemas.otp import OTPSetupResponse, OTPVerify
 
 @router.post("/setup-otp", response_model=OTPSetupResponse)
 async def setup_otp(
@@ -83,8 +88,6 @@ async def verify_otp(
     await auth_service.verify_otp(current_user, otp_data.code)
     return {"message": "OTP verified successfully"}
 
-from app.schemas.webauthn import WebauthnRegistrationStart, WebauthnRegistrationFinish, WebauthnLoginStart, WebauthnLoginFinish
-from app.services.webauthn_service import WebAuthnService
 
 @router.post("/webauthn/register/start")
 async def webauthn_register_start(
