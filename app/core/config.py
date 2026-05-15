@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Any
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import AnyHttpUrl, EmailStr, validator
+from pydantic import AnyHttpUrl, EmailStr, field_validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Auth-as-a-Service"
@@ -35,6 +35,24 @@ class Settings(BaseSettings):
     RP_ID: str = "localhost"
     RP_NAME: str = "Auth as a Service"
     ORIGIN: str = "http://localhost:8000"
+
+    # CORS
+    CORS_ORIGINS: list[str] | str = ["http://localhost:8000", "http://localhost:3000"]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> list[str] | str:
+        if isinstance(v, str) and not v.startswith("["):
+            origins = [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            origins = v
+        else:
+            raise ValueError(v)
+
+        if origins == "*" or (isinstance(origins, list) and "*" in origins):
+            raise ValueError("CORS_ORIGINS cannot contain '*' when credentials are allowed")
+
+        return origins
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
