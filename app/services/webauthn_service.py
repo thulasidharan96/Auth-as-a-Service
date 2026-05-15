@@ -49,11 +49,11 @@ class WebAuthnService:
             
         webauthn_creds = await credential_repo.get_all_by_user_id_and_method(self.db, user.id, "webauthn")
         
-        if not webauthn_creds:
+        if not credentials:
             raise HTTPException(status_code=400, detail="No passkeys found for user")
             
         # Normally match by credential_id, simplify for now
-        cred = webauthn_creds[0]
+        cred = credentials[0]
         
         try:
             new_sign_count = verify_authentication(
