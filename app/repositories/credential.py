@@ -13,4 +13,13 @@ class CredentialRepository(BaseRepository[Credential]):
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
+    async def get_by_user_and_method(self, db: AsyncSession, user_id: str, auth_method: str) -> Optional[Credential]:
+        result = await db.execute(
+            select(Credential).filter(
+                Credential.user_id == user_id,
+                Credential.auth_method == auth_method
+            )
+        )
+        return result.scalars().first()
+
 credential_repo = CredentialRepository(Credential)
