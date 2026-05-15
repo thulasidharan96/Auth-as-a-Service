@@ -3,7 +3,7 @@ from jose import jwt
 from app.core.config import settings
 
 def create_magic_link_token(email: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.MAGIC_LINK_EXPIRE_MINUTES)
     to_encode = {"exp": expire, "sub": email, "type": "magic_link"}
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
