@@ -9,6 +9,7 @@ from app.repositories.credential import credential_repo
 from app.utils.webauthn import get_registration_options, verify_registration, get_authentication_options, verify_authentication
 from app.core.logging import logger
 from typing import Any
+from app.core.logging import logger
 
 class WebAuthnService:
     def __init__(self, db: AsyncSession):

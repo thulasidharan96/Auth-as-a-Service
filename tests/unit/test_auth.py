@@ -1,3 +1,4 @@
+import httpx
 from typing import Generator
 import pytest
 from httpx import AsyncClient, ASGITransport
