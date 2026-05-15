@@ -8,6 +8,7 @@ from app.repositories.user import user_repo
 from app.repositories.credential import credential_repo
 from app.utils.webauthn import get_registration_options, verify_registration, get_authentication_options, verify_authentication
 from typing import Any
+from app.core.logging import logger
 
 class WebAuthnService:
     def __init__(self, db: AsyncSession):
@@ -32,7 +33,8 @@ class WebAuthnService:
             )
             return {"status": "success"}
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            logger.error("Registration error: %s", str(e))
+            raise HTTPException(status_code=400, detail="Registration failed")
 
     async def authentication_options(self, email: str) -> dict:
         user = await user_repo.get_by_email(self.db, email)
@@ -66,4 +68,5 @@ class WebAuthnService:
             await self.db.commit()
             return user
         except Exception as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            logger.error("Authentication error: %s", str(e))
+            raise HTTPException(status_code=400, detail="Authentication failed")
