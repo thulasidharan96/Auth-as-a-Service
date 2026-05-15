@@ -47,8 +47,7 @@ class WebAuthnService:
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
             
-        credentials = await credential_repo.get_by_user_id(self.db, user.id)
-        webauthn_creds = [c for c in credentials if c.auth_method == "webauthn"]
+        webauthn_creds = await credential_repo.get_all_by_user_id_and_method(self.db, user.id, "webauthn")
         
         if not webauthn_creds:
             raise HTTPException(status_code=400, detail="No passkeys found for user")
